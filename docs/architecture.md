@@ -17,6 +17,54 @@ Market data
 
 A interação principal do usuário com o sistema será via CLI. Esse CLI deve acionar casos de uso internos e consultar estado persistido, sem concentrar regra de negócio.
 
+## Organização do código
+
+O código Python deve ficar dentro de `src/trader/`, separado por domínio operacional. Essa organização acompanha os limites arquiteturais do robô e ajuda a evitar que estratégia, execução, storage e conectores externos fiquem acoplados.
+
+Layout conceitual:
+
+```text
+src/
+    trader/
+        cli/
+        config/
+        core/
+        market_data/
+        account/
+        strategy/
+        risk/
+        execution/
+        portfolio/
+        reconciliation/
+        storage/
+        api/
+        ops/
+```
+
+Responsabilidades principais:
+
+- `cli`: comandos Typer e apresentação Rich.
+- `config`: carregamento e validação de configuração.
+- `core`: tipos, eventos e utilitários compartilhados.
+- `market_data`: dados públicos de mercado e normalização.
+- `account`: eventos privados de conta, ordens, fills e saldos.
+- `strategy`: estratégias e geração de sinais.
+- `risk`: validação de sinais e geração de intents aprovados ou bloqueados.
+- `execution`: envio, cancelamento e consulta de ordens.
+- `portfolio`: estado local calculado a partir de fatos persistidos.
+- `reconciliation`: comparação entre estado local e exchange.
+- `storage`: persistência, modelos de banco e repositórios.
+- `api`: API interna FastAPI.
+- `ops`: logging, alertas, circuit breaker e ferramentas operacionais.
+
+Implementações específicas de exchange devem ficar nas bordas dos módulos correspondentes, por exemplo:
+
+- `market_data/binance_spot.py`
+- `account/binance_spot.py`
+- `execution/binance_spot.py`
+
+O restante do sistema deve depender de contratos internos desses módulos, não das implementações Binance diretamente.
+
 ## Componentes
 
 ### Market data
